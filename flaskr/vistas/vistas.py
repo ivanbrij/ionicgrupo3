@@ -8,6 +8,12 @@ cancion_schema = CancionSchema()
 usuario_schema = UsuarioSchema()
 album_schema = AlbumSchema()
 
+def getNombres(amigos):
+    minusculas = amigos.lower()
+    sinespacios = minusculas.replace(" ","")
+    nombres = sinespacios.split(',')
+    return nombres
+
 
 class VistaCanciones(Resource):
 
@@ -185,6 +191,37 @@ class VistaUsuariosCancionCompartida(Resource):
     def post(self, id_cancion):
         cancion = Cancion.query.get_or_404(id_cancion)
 
+        amigos = request.json["amigos"]
+        nombres = getNombres(amigos)
+
+        for n in nombres:
+            usuario = Usuario.query.filter(Usuario.nombre == n).first()
+            db.session.commit()
+            if usuario is None:
+                return "Uno de los usuarios no existe", 404
+
+        for n in nombres:
+            usuario = Usuario.query.filter(Usuario.nombre == n).first()
+            cancion.usuarios.append(usuario)
+        db.session.commit()
+        return "La cancion se compartio con exito", 200
+
+    def get(self, id_cancion):
+        cancion = Cancion.query.get_or_404(id_cancion)
+        return [usuario_schema.dump(us) for us in cancion.usuarios]
+
+
+class VistaCancionesCompartidasUsuario(Resource):
+    def get(self, id_usuario):
+        usuario = Usuario.query.get_or_404(id_usuario)
+        return [cancion_schema.dump(ca) for ca in usuario.cancionescompartidas]
+
+# Backup VistaUsuariosCancionCompartida
+class VistaUsuariosCompartirCancion(Resource):
+
+    def post(self, id_cancion):
+        cancion = Cancion.query.get_or_404(id_cancion)
+
         if "id_usuario" in request.json.keys():
 
             nuevo_usuario = Usuario.query.get(request.json["id_usuario"])
@@ -203,8 +240,4 @@ class VistaUsuariosCancionCompartida(Resource):
         cancion = Cancion.query.get_or_404(id_cancion)
         return [usuario_schema.dump(us) for us in cancion.usuarios]
 
-
-class VistaCancionesCompartidasUsuario(Resource):
-    def get(self, id_usuario):
-        usuario = Usuario.query.get_or_404(id_usuario)
-        return [cancion_schema.dump(ca) for ca in usuario.cancionescompartidas]
+#{"idCancion":7,"amigos":"juan,camilo,tatiana","idUser":2}
