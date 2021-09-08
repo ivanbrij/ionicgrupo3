@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/accedian/MISO_T21/ionicgrupo3/flaskr/venv"
+VIRTUAL_ENV="/home/accedian/MISO_T21/MISW4201-202114-Grupo03/flaskr/venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

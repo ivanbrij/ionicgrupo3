@@ -29,7 +29,7 @@ end
 # unset irrelevant variables
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/accedian/MISO_T21/ionicgrupo3/flaskr/venv"
+set -gx VIRTUAL_ENV "/home/accedian/MISO_T21/MISW4201-202114-Grupo03/flaskr/venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH
