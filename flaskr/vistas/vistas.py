@@ -15,17 +15,26 @@ def getNombres(amigos):
     return nombres
 
 
-class VistaCanciones(Resource):
+class VistaCancionesUsuario(Resource):
 
-    def post(self):
-        nueva_cancion = Cancion(titulo=request.json["titulo"], minutos=request.json["minutos"],
-                                segundos=request.json["segundos"], interprete=request.json["interprete"])
-        db.session.add(nueva_cancion)
-        db.session.commit()
+    @jwt_required()
+    def post(self, id_usuario):
+        nueva_cancion = Cancion(titulo=request.json["titulo"], minutos=request.json["minutos"], segundos=request.json["segundos"], interprete=request.json["interprete"])
+        usuario = Usuario.query.get_or_404(id_usuario)
+        usuario.canciones.append(nueva_cancion)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            return 'El usuario ya tiene una cancion con dicho nombre',409
+
         return cancion_schema.dump(nueva_cancion)
 
-    def get(self):
-        return [cancion_schema.dump(ca) for ca in Cancion.query.all()]
+
+    @jwt_required()
+    def get(self, id_usuario):
+        usuario = Usuario.query.get_or_404(id_usuario)
+        return [cancion_schema.dump(ca) for ca in usuario.canciones]
 
 class VistaUsuarios(Resource):
 
@@ -92,6 +101,14 @@ class VistaLogIn(Resource):
         else:
             token_de_acceso = create_access_token(identity=usuario.id)
             return {"mensaje": "Inicio de sesión exitoso", "token": token_de_acceso}
+
+
+class VistaUsuario(Resource):
+
+    @jwt_required()
+    def get(self,id_usuario):
+        usuario = Usuario.query.get_or_404(id_usuario)
+        return usuario_schema.dump(usuario)
 
 
 class VistaAlbumsUsuario(Resource):
@@ -216,28 +233,3 @@ class VistaCancionesCompartidasUsuario(Resource):
         usuario = Usuario.query.get_or_404(id_usuario)
         return [cancion_schema.dump(ca) for ca in usuario.cancionescompartidas]
 
-# Backup VistaUsuariosCancionCompartida
-class VistaUsuariosCompartirCancion(Resource):
-
-    def post(self, id_cancion):
-        cancion = Cancion.query.get_or_404(id_cancion)
-
-        if "id_usuario" in request.json.keys():
-
-            nuevo_usuario = Usuario.query.get(request.json["id_usuario"])
-            if nuevo_usuario is not None:
-                cancion.usuarios.append(nuevo_usuario)
-                db.session.commit()
-            else:
-                return 'Usuario erróneo', 404
-        else:
-            nuevo_usuario = Usuario(nombre=request.json["nombre"], contrasena=request.json["contrasena"])
-            cancion.usuarios.append(nuevo_usuario)
-        db.session.commit()
-        return usuario_schema.dump(nuevo_usuario)
-
-    def get(self, id_cancion):
-        cancion = Cancion.query.get_or_404(id_cancion)
-        return [usuario_schema.dump(us) for us in cancion.usuarios]
-
-#{"idCancion":7,"amigos":"juan,camilo,tatiana","idUser":2}
