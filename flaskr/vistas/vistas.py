@@ -226,12 +226,13 @@ class VistaUsuariosCancionCompartida(Resource):
         n_mensaje = "El usuario " + usuario_cancion.nombre + " te ha compartido la cancion " + cancion.titulo
         print (n_mensaje)
         n_fecha = datetime.now()
+        n_cancion = request.json["idCancion"]
         #nueva_notificacion = Notificacion(mensaje=n_mensaje, fecha=n_fecha, mensaje_leido=False)
         #print(nueva_notificacion.fecha, nueva_notificacion.mensaje_leido)
 
         for n in nombres:
             usuario = Usuario.query.filter(Usuario.nombre == n).first()
-            nueva_notificacion = Notificacion(mensaje=n_mensaje, fecha=n_fecha, mensaje_leido=False)
+            nueva_notificacion = Notificacion(mensaje=n_mensaje, fecha=n_fecha, ccompartida_id = n_cancion, mensaje_leido=False)
             usuario.notificaciones.append(nueva_notificacion)
             db.session.commit()
             cancion.usuarios.append(usuario)
