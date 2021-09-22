@@ -57,7 +57,7 @@ class Notificacion(db.Model):
     fecha = db.Column(db.DateTime)
     mensaje = db.Column(db.String(512))
     mensaje_leido = db.Column(db.Boolean)
-    ccompartida_id = db.Column(db.Integer)
+    cancioncompartida = db.Column(db.Integer)
     usuario = db.Column(db.Integer, db.ForeignKey("usuario.id"))
 
 class EnumADiccionario(fields.Field):
