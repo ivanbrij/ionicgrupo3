@@ -1,8 +1,12 @@
 import unittest
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+from modelos import Usuario, db, Cancion
 
-from flaskr.modelos import db, Cancion, Usuario, CancionSchema
+#from flaskr.modelos import db, Cancion, Usuario, CancionSchema
 
 
 class VerCancionesTest(unittest.TestCase):

@@ -1,12 +1,14 @@
 from flask import request
-from ..modelos import db, Cancion, CancionSchema, Usuario, UsuarioSchema, Album, AlbumSchema
+from ..modelos import db, Cancion, CancionSchema, Usuario, UsuarioSchema, Album, AlbumSchema, Notificacion, NotificacionSchema
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
+from datetime import datetime
 
 cancion_schema = CancionSchema()
 usuario_schema = UsuarioSchema()
 album_schema = AlbumSchema()
+notificacion_schema = NotificacionSchema()
 
 def getNombres(amigos):
     minusculas = amigos.lower()
@@ -202,12 +204,16 @@ class VistaAlbum(Resource):
         db.session.commit()
         return '', 204
 
+# Se agrega la vista UsuariosCancionCompartida como parte del relese para Sprint 1
+# En esta vista se puede agregar o listar los usuarios a los que se comparte una cancion
 
 class VistaUsuariosCancionCompartida(Resource):
 
     def post(self, id_cancion):
         cancion = Cancion.query.get_or_404(id_cancion)
-
+        idUser = request.json["idUser"]
+        usuario_cancion = Usuario.query.filter(Usuario.id == idUser).first()
+        
         amigos = request.json["amigos"]
         nombres = getNombres(amigos)
 
@@ -217,19 +223,48 @@ class VistaUsuariosCancionCompartida(Resource):
             if usuario is None:
                 return "Uno de los usuarios no existe", 404
 
+        n_mensaje = "El usuario " + usuario_cancion.nombre + " te ha compartido la cancion " + cancion.titulo
+        print (n_mensaje)
+        n_fecha = datetime.now()
+        #nueva_notificacion = Notificacion(mensaje=n_mensaje, fecha=n_fecha, mensaje_leido=False)
+        #print(nueva_notificacion.fecha, nueva_notificacion.mensaje_leido)
+
         for n in nombres:
             usuario = Usuario.query.filter(Usuario.nombre == n).first()
+            nueva_notificacion = Notificacion(mensaje=n_mensaje, fecha=n_fecha, mensaje_leido=False)
+            usuario.notificaciones.append(nueva_notificacion)
+            db.session.commit()
             cancion.usuarios.append(usuario)
         db.session.commit()
-        return "La cancion se compartio con exito", 200
+        return "La cancion se compartio con exito" + n_mensaje, 200
 
     def get(self, id_cancion):
         cancion = Cancion.query.get_or_404(id_cancion)
         return [usuario_schema.dump(us) for us in cancion.usuarios]
 
+# Se agrega la vista CancionesCompartidasUsuario como parte del relese para Sprint 1
+# En esta vista se puede listar todas las canciones que se han compartido con el usuario
 
 class VistaCancionesCompartidasUsuario(Resource):
+
     def get(self, id_usuario):
         usuario = Usuario.query.get_or_404(id_usuario)
         return [cancion_schema.dump(ca) for ca in usuario.cancionescompartidas]
 
+class VistaNotificacionesUsuario(Resource):
+
+    def get(self, id_usuario):
+        usuario = Usuario.query.get_or_404(id_usuario)
+        return [notificacion_schema.dump(no) for no in usuario.notificaciones]
+
+class VistaNotificacion(Resource):
+
+    def get(self, id_notificacion):
+        notificacion = Notificacion.query.get_or_404(id_notificacion)
+        return [notificacion_schema.dump(notificacion)]
+
+    def put(self, id_notificacion):
+        notificacion = Notificacion.query.get_or_404(id_notificacion)
+        notificacion.mensaje_leido = True
+        db.session.commit()
+        return notificacion_schema.dump(notificacion)
