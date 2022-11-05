@@ -280,4 +280,9 @@ class VistaComentariosDeCancion(Resource):
         return [comentario_schema.dump(ca) for ca in cancion.comentarios]
 
 
+class VistaComentariosDeCancion1(Resource):
+   
+    def get(self, id_cancion):
+        cancion = Cancion.query.get_or_404(id_cancion)
+        return [comentario_schema.dump(ca) for ca in cancion.comentarios]
 
