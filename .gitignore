@@ -4,3 +4,6 @@
 env/
 venv/
 flaskr/venv
+flaskr/venv/*
+
+tutorial_canciones.db
