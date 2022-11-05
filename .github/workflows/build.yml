@@ -17,11 +17,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.7'
-     - name: Instalación de librerías y dependencias
+      - name: Instalación de librerías y dependencias
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-     - name: SonarCloud Scan
+      - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
